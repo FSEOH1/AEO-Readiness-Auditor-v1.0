@@ -1,23 +1,19 @@
-# AEO Readiness Auditor
+# AEO/GEO Readiness Auditor — Site-wide Edition
 
-A Streamlit app that audits a single web page for observable AEO-related content, structure, metadata, crawlability, attribution, and structured-data signals. It does not require paid APIs.
+A modular Streamlit application for site-wide AEO/GEO-related content and technical checks. It uses no paid external APIs.
 
-## Features
-- Title and meta-description checks
-- H1/H2 and heading structure checks
-- Approximate visible word count
-- Heuristic answer-first opening check
-- Question headings and FAQ signals
-- Author/attribution signals
-- JSON-LD syntax parsing and schema type detection
-- Canonical and robots meta checks
-- Image alt coverage
-- Basic language, viewport, semantic landmark checks
-- Internal/external link inventory
-- CSV, JSON, and text report exports
+## Modules
+- `crawler.py`: XML sitemap parsing, internal link discovery, request pacing, robots.txt checks, response size limits, redirect validation and best-effort SSRF protection.
+- `extractor.py`: HTML, headings, text, links, metadata, author signals and JSON-LD extraction.
+- `checks_content.py`: answer-first signals, question coverage, concise paragraphs, source/freshness wording and repeated paragraphs.
+- `checks_technical.py`: titles, descriptions, headings, robots meta, canonicals, image alt, language, viewport and link signals.
+- `checks_schema.py`: JSON-LD syntax parsing and basic schema type checks.
+- `scoring.py`: transparent score, priorities and summary counts.
+- `database.py`: SQLite audit history, page results and issue records.
+- `app.py`: Streamlit UI, crawl controls, results, history and CSV/JSON/Excel exports.
 
 ## Run locally
-Python 3.10+ is recommended.
+Python 3.10+ recommended.
 
 ```bash
 python -m venv .venv
@@ -26,16 +22,21 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-## Deploy to Streamlit Community Cloud
+## Deploy on Streamlit Community Cloud
 1. Create a GitHub repository.
-2. Upload `app.py`, `requirements.txt`, and this README.
-3. In Streamlit Community Cloud, create an app from that repository and choose `app.py`.
-4. Deploy. No API secrets are needed.
+2. Upload all `.py` files, `requirements.txt`, and `README.md` to the repository root.
+3. In Streamlit Community Cloud, create an app from the repository and set `app.py` as the entry point.
+4. Deploy. No API secrets are required.
 
-## Notes and limitations
-- This is a heuristic checklist, not a ranking factor model or AI citation predictor.
-- It reads the HTML returned to `requests`; JavaScript-rendered content may not be present.
-- It audits one URL per run and does not currently crawl a sitemap or follow links.
-- It does not test robots.txt, `X-Robots-Tag`, Google indexing, Core Web Vitals, or every Schema.org property.
-- Only audit pages you are authorized to access. Respect website terms, robots directives, and rate limits.
-- A score of 100 is not a guarantee of AEO/GEO visibility.
+## Responsible use
+- Audit only websites you own or are authorised to test.
+- Keep the page limit modest and delay between requests.
+- Respect site terms and robots.txt.
+- The crawler uses best-effort SSRF protection; infrastructure-level egress controls are still recommended for a public deployment.
+- Community Cloud local SQLite storage may not be durable across restarts/redeploys. For reliable historical tracking, configure a persistent managed database.
+
+## Limitations
+- Fetches server-returned HTML; does not execute JavaScript.
+- No Core Web Vitals, search engine index-status, or live AI citation measurement.
+- JSON-LD validation is syntax/basic-type checking, not a complete Schema.org validator.
+- Scoring is heuristic and does not predict rankings or AI citations.
